@@ -580,16 +580,33 @@ end
 library.utility = utility
 
 function library:Unload()
-    library.unloaded:Fire();
-    for _,c in next, self.connections do
-        c:Disconnect()
+    -- Fire the unloaded event
+    library.unloaded:Fire()
+
+    -- Disconnect all connections
+    for _, connection in ipairs(self.connections) do
+        connection:Disconnect()
     end
-    for obj in next, self.drawings do
-        obj:Remove()
+
+    -- Remove all drawings
+    for _, obj in ipairs(self.drawings) do
+        if obj.Remove then
+            obj:Remove()
+        end
     end
     table.clear(self.drawings)
+
+    -- Restore the default mouse behavior (if applicable)
+    local player = game.Players.LocalPlayer
+    if player and player:GetMouse() then
+        local mouse = player:GetMouse()
+        mouse.Icon = "" -- Reset the mouse icon
+    end
+
+    -- Clean up global reference
     getgenv().library = nil
 end
+
 
 function library:init()
     if self.hasInit then
